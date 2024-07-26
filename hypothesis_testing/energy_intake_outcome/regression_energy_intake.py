@@ -15,6 +15,12 @@ import statsmodels.formula.api as smf
 import statsmodels as statsmodels
 import math
 
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+import statsmodels as statsmodels
+from statsmodels.formula.api import ols
+
+
 # Import date class from datetime module
 from datetime import date
 today = date.today()
@@ -22,7 +28,6 @@ today = date.today()
 #%% IMPORT DATAFILES
 #Navigate to the folder where data are located. 
 dir_base="..." #directory that contains test meal csv file. 
-os.chdir(dir_base) 
 
 df_testmeal_raw = pd.read_csv(f"{dir_base}/energy_intake_data.csv") 
 df_testmeal_raw.columns
@@ -97,7 +102,7 @@ df_testmeal_raw_wide=df_testmeal_raw.pivot(index='subjid',columns='INTERVAL_NAME
 df_testmeal_raw_wide.columns = ['_'.join(col).rstrip('_') for col in df_testmeal_raw_wide.columns.values]
 
 # Reorder columns so that 'pre' vars come before 'post' vars in new dataset. ALSO, only include covars as "pre" and outcome vars as pre and post:
-df_testmeal_raw_wide = df_testmeal_raw_wide[['tx_condition_pre', 'CONDITION_pre', 'Nonwhite_pre', 'age_pre', 'LOC_YN_pre',  
+df_testmeal_raw_wide = df_testmeal_raw_wide[['tx_condition_pre', 'Nonwhite_pre', 'age_pre', 'LOC_YN_pre',  
                    'height_pre', 'TOT_LEAN_pre',
                    'FAT_PERCENT_ARCSIN_pre',
                    'TOTAL_CAL_CONSUME_pre', 'TOTAL_CAL_CONSUME_post', 
@@ -113,10 +118,10 @@ df_testmeal_raw_wide.columns #check- did it reorder correctly/do we have all the
 
 #%% RUN General linear MODEL TESTING THE EFFECT OF CONDITION ON CHANGE IN test meal intake
 
-dv="TOTAL_CAL_CONSUME_post" #to initialize function. 
+dv="TOTAL_CAL_CONSUME" #to initialize function. 
 
-def run_mlm (dv):
-    model_total_cal = f"{dv} ~C(tx_condition_pre)+C(LOC_YN_pre)+ C(Nonwhite_pre) +TOT_LEAN_pre +FAT_PERCENT_ARCSIN_pre +age_pre +height_pre"
+def run_ols (dv):
+    model_total_cal = f"{dv}_post ~ {dv}_pre+ C(tx_condition_pre)+C(LOC_YN_pre)+ C(Nonwhite_pre) +TOT_LEAN_pre +FAT_PERCENT_ARCSIN_pre +age_pre +height_pre"
     total_cal = smf.ols(model_total_cal,data=df_testmeal_raw_wide).fit()
     total_cal.summary() 
     
@@ -158,11 +163,10 @@ def run_mlm (dv):
     
     #Get grand mean for other regressors.
     predict_df=df_testmeal_raw_wide
-    predict_df=predict_df.drop(columns= ['tx_condition_pre', 'Nonwhite_pre','LOC_YN_pre','CONDITION_pre','TOTAL_CAL_CONSUME_pre',
-           'TOTAL_CAL_CONSUME_post', 'TOTAL_PRO_PCT_CONSUME_ARCSIN_pre',
-           'TOTAL_PRO_PCT_CONSUME_ARCSIN_post', 'TOTAL_FAT_PCT_CONSUME_ARCSIN_pre',
+    predict_df=predict_df.drop(columns= ['tx_condition_pre', 'Nonwhite_pre','LOC_YN_pre',
+           'TOTAL_CAL_CONSUME_post', 
+           'TOTAL_PRO_PCT_CONSUME_ARCSIN_post', 
            'TOTAL_FAT_PCT_CONSUME_ARCSIN_post',
-           'TOTAL_CARB_PCT_CONSUME_ARCSIN_pre',
            'TOTAL_CARB_PCT_CONSUME_ARCSIN_post'])
     cov_means=statsmodels.stats.descriptivestats.describe(data=predict_df, stats=["mean"], numeric=True,categorical=True,alpha=0.05, use_t=False, percentiles=(1, 5, 10, 25, 50, 75, 90, 95, 99), ntop=5)
     predictions=means.merge(cov_means, how='cross', validate="m:1")
@@ -204,9 +208,9 @@ def run_mlm (dv):
 
             
 #%% RUN General linear MODEL TESTING THE INTERACTION EFFECT OF CONDITION BY LOC-EATING ON CHANGE IN test meal intake    
-def run_mlm_loc_moderation (dv):
+def run_ols_loc_moderation (dv):
     
-    interaction_model_total_cal = f"{dv} ~ C(tx_condition_pre)*C(LOC_YN_pre)+ C(Nonwhite_pre) +TOT_LEAN_pre +FAT_PERCENT_ARCSIN_pre +age_pre +height_pre"
+    interaction_model_total_cal = f"{dv}_post ~ {dv}_pre+  C(tx_condition_pre)*C(LOC_YN_pre)+ C(Nonwhite_pre) +TOT_LEAN_pre +FAT_PERCENT_ARCSIN_pre +age_pre +height_pre"
     total_cal_interaction = smf.ols(interaction_model_total_cal,data=df_testmeal_raw_wide).fit()
     total_cal_interaction.summary() 
 
@@ -422,12 +426,13 @@ def run_mlm_loc_moderation (dv):
     
     loc_summary.to_csv(f'{dir_base}/{today}_testmeal_ols_LOCinteraction_{dv}.csv',sep=',', index=False)
 
+
 #%% Loop over different test meal metrics to obtain results for all outcomes
 
-dv_list=["TOTAL_CAL_CONSUME_post", "TOTAL_PRO_PCT_CONSUME_ARCSIN_post", "TOTAL_FAT_PCT_CONSUME_ARCSIN_post", "TOTAL_CARB_PCT_CONSUME_ARCSIN_post"]
+dv_list=["TOTAL_CAL_CONSUME", "TOTAL_PRO_PCT_CONSUME_ARCSIN", "TOTAL_FAT_PCT_CONSUME_ARCSIN", "TOTAL_CARB_PCT_CONSUME_ARCSIN"]
 for dv in dv_list:
-    run_mlm(dv)      
-    run_mlm_loc_moderation(dv)
+    run_ols(dv)      
+    run_ols_loc_moderation(dv)
 
 
 

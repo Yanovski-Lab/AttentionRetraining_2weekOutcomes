@@ -23,7 +23,6 @@ today = date.today()
 #%% IMPORT DATAFILES
 #Navigate to the folder where data are located. 
 dir_base="..." #directory that contains test meal csv file. 
-os.chdir(dir_base) 
 
 #read in csv data.
 rxn_dset=pd.read_csv(f"{dir_base}/reaction_time_data.csv")
