@@ -409,7 +409,7 @@ def run_ols_loc_moderation (dv):
     interaction_dframe['95CI_low_traditional']= interaction_dframe['cohens_d']-interaction_dframe['95CI']
     interaction_dframe['95CI_up_traditional']=interaction_dframe['cohens_d']+interaction_dframe['95CI'] 
     
-    interaction_dframe.to_csv(f'{dir_base}/{today}_testmeal_mlm_loc_{dv}.csv',sep=',', index=False)
+    interaction_dframe.to_csv(f'{dir_base}/{today}_testmeal_ols_loc_{dv}.csv',sep=',', index=False)
     
     ############################
     #Interaction estimates. 
