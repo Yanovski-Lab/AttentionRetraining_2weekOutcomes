@@ -185,7 +185,7 @@ def run_ols (dv):
     prediction_summary=pd.DataFrame(prediction_total_cal)            
     prediction_summary=prediction_summary.rename(columns={0:'predict_value'})
     emm=pd.concat([predictions,prediction_summary], axis =1)
-    emm=emm.drop(columns=['FAT_PERCENT_ARCSIN_pre', 'TOT_LEAN_pre', 'age_pre','height_pre', 'Nonwhite_pre','LOC_YN_pre'])
+    emm=emm.drop(columns=['FAT_PERCENT_ARCSIN_pre', 'TOT_LEAN_pre', 'age_pre','height_pre', 'Nonwhite_pre','LOC_YN_pre',f"{dv}_pre"])
     
     emm_condition=emm.groupby(by="tx_condition_pre").mean() #EMM for condition comparisons
     emm_condition=emm_condition.reset_index()
@@ -196,7 +196,7 @@ def run_ols (dv):
     emm_condition['mean_diff']=(emm_condition['emm_active']-emm_condition['emm_control'])
     
     #cohens d and 95% CI computations
-    condition_summary=mixed_summary.drop(labels=['Intercept','C(Nonwhite_pre)[T.1]','FAT_PERCENT_ARCSIN_pre','age_pre','height_pre', 'C(LOC_YN_pre)[T.1]', 'TOT_LEAN_pre'],axis=0)
+    condition_summary=mixed_summary.drop(labels=['Intercept','C(Nonwhite_pre)[T.1]','FAT_PERCENT_ARCSIN_pre','age_pre','height_pre', 'C(LOC_YN_pre)[T.1]', 'TOT_LEAN_pre',f"{dv}_pre"],axis=0)
     condition_summary = pd.concat([condition_summary,emm_condition],axis=1)
     condition_summary['SD_pooled']= SD_pooled #SD is the pooled within-group standard deviation of the outcome measure (Y).
     condition_summary['SE_pooled']=condition_summary['SD_pooled']*(np.sqrt((1/n_ctrl)+(1/n_active)))
@@ -263,7 +263,7 @@ def run_ols_loc_moderation (dv):
 
     loc_emm=pd.concat([predictions,loc_prediction_summary], axis =1)
     loc_emm_condition=loc_emm.groupby(by="tx_condition_pre").mean() #EMM for condition comparisons
-    loc_emm_condition=loc_emm_condition.drop(columns=['FAT_PERCENT_ARCSIN_pre', 'TOT_LEAN_pre', 'age_pre','height_pre', 'Nonwhite_pre','LOC_YN_pre'])
+    loc_emm_condition=loc_emm_condition.drop(columns=['FAT_PERCENT_ARCSIN_pre', 'TOT_LEAN_pre', 'age_pre','height_pre', 'Nonwhite_pre','LOC_YN_pre',f'{dv}_pre'])
     loc_emm_condition=loc_emm_condition.reset_index()
     loc_emm_condition=loc_emm_condition.transpose()
     loc_emm_condition=loc_emm_condition.rename(columns={0:'emm_control',1:'emm_active'})
@@ -272,7 +272,7 @@ def run_ols_loc_moderation (dv):
     loc_emm_condition['mean_diff']=loc_emm_condition['emm_active']-loc_emm_condition['emm_control']
     
     #cohen's d and 95% CI computations for condition 
-    loc_condition_summary=loc_mixed_summary.drop(labels=['C(tx_condition_pre)[T.1]:C(LOC_YN_pre)[T.1]','C(LOC_YN_pre)[T.1]','Intercept','C(Nonwhite_pre)[T.1]','FAT_PERCENT_ARCSIN_pre','age_pre','height_pre','TOT_LEAN_pre'],axis=0)
+    loc_condition_summary=loc_mixed_summary.drop(labels=['C(tx_condition_pre)[T.1]:C(LOC_YN_pre)[T.1]','C(LOC_YN_pre)[T.1]','Intercept','C(Nonwhite_pre)[T.1]','FAT_PERCENT_ARCSIN_pre','age_pre','height_pre','TOT_LEAN_pre',f'{dv}_pre'],axis=0)
     loc_condition_summary = pd.concat([loc_condition_summary,loc_emm_condition],axis=1)
     loc_condition_summary['SD_pooled']= SD_pooled #SD is the pooled within-group standard deviation of the outcome measure (Y).
     loc_condition_summary['SE_pooled']=loc_condition_summary['SD_pooled']*(np.sqrt((1/n_ctrl)+(1/n_active)))
@@ -318,7 +318,7 @@ def run_ols_loc_moderation (dv):
     #get emm for condition  by LOC 
     loc_emm=pd.concat([predictions,loc_prediction_summary], axis =1)
     loc_emm_LOC_interaction=loc_emm.groupby(by=["tx_condition_pre","LOC_YN_pre"]).mean() #EMM for LOC by condition comparisons
-    loc_emm_LOC_interaction=loc_emm_LOC_interaction.drop(columns=['FAT_PERCENT_ARCSIN_pre', 'TOT_LEAN_pre', 'age_pre','height_pre', 'Nonwhite_pre'])
+    loc_emm_LOC_interaction=loc_emm_LOC_interaction.drop(columns=['FAT_PERCENT_ARCSIN_pre', 'TOT_LEAN_pre', 'age_pre','height_pre', 'Nonwhite_pre',f"{dv}_pre"])
     loc_emm_LOC_interaction=loc_emm_LOC_interaction.reset_index()
     loc_emm_LOC_interaction=loc_emm_LOC_interaction.transpose()
     loc_emm_LOC_interaction=loc_emm_LOC_interaction.rename(columns={0:'emm_control_noloc',1:'emm_control_loc',2:'emm_active_noloc',3:'emm_active_loc'})
@@ -428,7 +428,7 @@ def run_ols_loc_moderation (dv):
     #save model params for interaction 
     loc_summary = pd.concat([loc_param, loc_bse,loc_ci],axis=1)
     loc_summary['p']=total_cal_interaction.pvalues
-    loc_summary=loc_summary.drop(labels=['C(tx_condition_pre)[T.1]','C(LOC_YN_pre)[T.1]','Intercept','C(Nonwhite_pre)[T.1]','FAT_PERCENT_ARCSIN_pre','age_pre','height_pre', 'TOT_LEAN_pre'],axis=0)
+    loc_summary=loc_summary.drop(labels=['C(tx_condition_pre)[T.1]','C(LOC_YN_pre)[T.1]','Intercept','C(Nonwhite_pre)[T.1]','FAT_PERCENT_ARCSIN_pre','age_pre','height_pre', 'TOT_LEAN_pre',f'{dv}_pre'],axis=0)
     loc_summary=loc_summary.reset_index()
     loc_summary=loc_summary.drop(columns=['index'])  
     loc_emm_LOC_interaction=loc_emm_LOC_interaction.reset_index()
@@ -442,6 +442,7 @@ def run_ols_loc_moderation (dv):
 
 dv_list=["TOTAL_CAL_CONSUME", "TOTAL_PRO_PCT_CONSUME_ARCSIN", "TOTAL_FAT_PCT_CONSUME_ARCSIN", "TOTAL_CARB_PCT_CONSUME_ARCSIN"]
 for dv in dv_list:
+    dv=dv
     run_ols(dv)      
     run_ols_loc_moderation(dv)
 
