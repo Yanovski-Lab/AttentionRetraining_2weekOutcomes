@@ -168,6 +168,16 @@ def run_ols (dv):
            'TOTAL_PRO_PCT_CONSUME_ARCSIN_post', 
            'TOTAL_FAT_PCT_CONSUME_ARCSIN_post',
            'TOTAL_CARB_PCT_CONSUME_ARCSIN_post'])
+    
+    if dv=="TOTAL_CAL_CONSUME":
+        predict_df=predict_df.drop(columns=['TOTAL_PRO_PCT_CONSUME_ARCSIN_pre','TOTAL_FAT_PCT_CONSUME_ARCSIN_pre','TOTAL_CARB_PCT_CONSUME_ARCSIN_pre'])
+    if dv=="TOTAL_PRO_PCT_CONSUME_ARCSIN":
+        predict_df=predict_df.drop(columns=['TOTAL_CAL_CONSUME_pre','TOTAL_FAT_PCT_CONSUME_ARCSIN_pre','TOTAL_CARB_PCT_CONSUME_ARCSIN_pre'])
+    if dv=="TOTAL_FAT_PCT_CONSUME_ARCSIN":
+        predict_df=predict_df.drop(columns=['TOTAL_PRO_PCT_CONSUME_ARCSIN_pre','TOTAL_CAL_CONSUME_pre','TOTAL_CARB_PCT_CONSUME_ARCSIN_pre'])
+    if dv=="TOTAL_CARB_PCT_CONSUME_ARCSIN":
+        predict_df=predict_df.drop(columns=['TOTAL_PRO_PCT_CONSUME_ARCSIN_pre','TOTAL_FAT_PCT_CONSUME_ARCSIN_pre','TOTAL_CAL_CONSUME_pre'])
+
     cov_means=statsmodels.stats.descriptivestats.describe(data=predict_df, stats=["mean"], numeric=True,categorical=True,alpha=0.05, use_t=False, percentiles=(1, 5, 10, 25, 50, 75, 90, 95, 99), ntop=5)
     predictions=means.merge(cov_means, how='cross', validate="m:1")
     
@@ -249,7 +259,8 @@ def run_ols_loc_moderation (dv):
     loc_prediction_model=(total_cal_interaction.predict(exog=predictions))
     loc_prediction_summary=pd.DataFrame(loc_prediction_model)            
     loc_prediction_summary=loc_prediction_summary.rename(columns={0:'predict_value'})
-    
+
+
     loc_emm=pd.concat([predictions,loc_prediction_summary], axis =1)
     loc_emm_condition=loc_emm.groupby(by="tx_condition_pre").mean() #EMM for condition comparisons
     loc_emm_condition=loc_emm_condition.drop(columns=['FAT_PERCENT_ARCSIN_pre', 'TOT_LEAN_pre', 'age_pre','height_pre', 'Nonwhite_pre','LOC_YN_pre'])
